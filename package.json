@@ -22,7 +22,10 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
     "mysql": "^2.18.1",
-    "mysql2": "^3.11.2"
+    "mysql2": "^3.11.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

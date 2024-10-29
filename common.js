@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const {SECRET_KEY} = require('./db');
 function verifyToken(req, res, next) {
   const token = req.headers['authorization']?.split(' ')[1]; // 获取请求头中的 token
-  console.log('token',token)
   if (!token) {
     return res.status(403).json({ error: '未提供 Token' });
   }

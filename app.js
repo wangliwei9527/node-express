@@ -1,6 +1,6 @@
 const express = require('express');
 const {sqlSelect,SECRET_KEY} = require('./db');
-const {verifyToken} = require('./common');
+const {verifyToken,generateRandomName} = require('./common');
 const jwt = require('jsonwebtoken');
 const {wxLogin} = require('./wxLogin');
 const fs = require('fs');
@@ -33,22 +33,37 @@ app.use((req, res, next) => {
   logStream.write(`Request: ${JSON.stringify(logDetails)}\n`);
   next();
 });
-
 // 使用 morgan 中间件记录日志
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[iso]', { stream: logStream }));
 module.exports = { app };
 require('./routes/index')
 app.get('/login', (req, res) => {
   const code = req.query.code
+  const phone = req.query.phone
   wxLogin(code).then(async (data) => {
     console.log(data)
     const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])
     console.log(result)
-    // if (result.length !== 0) {
-    //   await sqlSelect('UPDATE users SET session_key = ? WHERE openid = ?')
-    // }
-    const token = jwt.sign({ openid:data.openid,userId:result[0].id }, SECRET_KEY, { expiresIn: '365d' });
-    res.send(token)
+    if (result.length !== 0) {
+      const userName = generateRandomName()
+      const sql = `INSERT INTO users (username, password, openid, phone, sex, age)VALUES (?, ?, ?, ?, ?, ?)`
+      const values = [userName, '@123456',data.openid, phone, 'male', 30]
+      const result = await sqlSelect(sql,values)
+      if(result.affectedRows > 0){
+        const token = jwt.sign({ openid:data.openid,userId:result[0].id }, SECRET_KEY, { expiresIn: '365d' });
+        res.send(token)
+      }else{
+        res.send({
+          msg: '注册失败',
+          code: 500
+        }
+        )
+      }
+    }else{
+      const token = jwt.sign({ openid:data.openid,userId:result[0].id }, SECRET_KEY, { expiresIn: '365d' });
+      res.send(token)
+    }
+    
   })
 })
 // 定义一个简单的路由

@@ -1,6 +1,6 @@
 const {app} = require('../app');
 const {sqlSelect} = require('../db');
-const {verifyToken} = require('../common');
+const {verifyToken,buildQuery} = require('../common');
 /**
  * @swagger
  * /house:
@@ -61,7 +61,7 @@ const {verifyToken} = require('../common');
  *                 description: 浏览量
  *               houseType:
  *                 type: string
- *                 description: 房型
+ *                 description: 户型
  *               squareMeter:
  *                 type: number
  *                 format: float
@@ -195,8 +195,10 @@ sqlSelect(sql,values).then((result) => {
 });
 
 app.get('/getHouse', (req, res) => {
-    const sql = `SELECT * FROM house`;
+// 定义一个SQL查询语句，从house表和user表中选择house表中的所有字段和user表中的phone字段，通过userId和id字段进行连接
+    const filters =req.query
+    const sql = buildQuery(filters)
     sqlSelect(sql).then((result) => {
-        res.status(200).json({ message: '', data: result });
+        res.status(200).json({ message: '查询成功', data: result });
     })
 })

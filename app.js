@@ -1,8 +1,6 @@
 const express = require('express');
-const {sqlSelect,SECRET_KEY} = require('./db');
-const {verifyToken,generateRandomName} = require('./common');
-const jwt = require('jsonwebtoken');
-const {wxLogin} = require('./wxLogin');
+const {sqlSelect} = require('./db');
+const {verifyToken} = require('./common');
 const fs = require('fs');
 const path = require('path');
 const morgan = require('morgan');
@@ -33,47 +31,19 @@ app.use((req, res, next) => {
   logStream.write(`Request: ${JSON.stringify(logDetails)}\n`);
   next();
 });
+// 设置静态文件目录，将上传的图片文件夹公开
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // 使用 morgan 中间件记录日志
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :date[iso]', { stream: logStream }));
 module.exports = { app };
 require('./routes/index')
-app.get('/login', (req, res) => {
-  const code = req.query.code
-  const phone = req.query.phone
-  wxLogin(code).then(async (data) => {
-    console.log(data)
-    const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])
-    console.log(result)
-    if (result.length !== 0) {
-      const userName = generateRandomName()
-      const sql = `INSERT INTO users (username, password, openid, phone, sex, age)VALUES (?, ?, ?, ?, ?, ?)`
-      const values = [userName, '@123456',data.openid, phone, 'male', 30]
-      const result = await sqlSelect(sql,values)
-      if(result.affectedRows > 0){
-        const token = jwt.sign({ openid:data.openid,userId:result[0].id }, SECRET_KEY, { expiresIn: '365d' });
-        res.send(token)
-      }else{
-        res.send({
-          msg: '注册失败',
-          code: 500
-        }
-        )
-      }
-    }else{
-      const token = jwt.sign({ openid:data.openid,userId:result[0].id }, SECRET_KEY, { expiresIn: '365d' });
-      res.send(token)
-    }
-    
-  })
-})
 // 定义一个简单的路由
 app.get('/getList',verifyToken, async (req, res) => {
   const openid = req.user.openid;  // 从 Token 中提取出 openid
-  console.log('openid',openid)
   const data = await sqlSelect('SELECT * FROM users WHERE openid = ?', [openid])
   res.send(data[0])
 });
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 }
-);
+); 

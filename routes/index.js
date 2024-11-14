@@ -1,2 +1,6 @@
 require('./user')
 require('./house')
+require('./history')
+require('./collections')
+require('./login')
+require('./multer')

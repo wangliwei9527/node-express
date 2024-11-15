@@ -62,19 +62,21 @@ const upload = multer({ storage: storage });
  *                   type: string
  *                   example: 图片上传失败
  */
-app.post('/upload', upload.single('file'), (req, res) => {
-    try {
-     const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-     console.log(imageUrl);
-     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      // 文件上传成功后的处理逻辑
-      res.status(200).json({
-        message: '图片上传成功',
-        filePath: imageUrl,  // 返回文件路径
-        code:200
-      });
-    } catch (error) {
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.status(500).json({ message: '图片上传失败' ,code:500});
+app.post('/upload', (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      // Multer 错误
+      return res.status(400).json({ message: `文件上传失败: ${err.message}`, code: 400 });
+    } else if (err) {
+      // 其他错误
+      return res.status(400).json({ message: `上传出错: ${err.message}`, code: 400 });
     }
+    // 文件上传成功后的处理逻辑
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.status(200).json({
+      message: '图片上传成功',
+      filePath: imageUrl,
+      code: 200,
+    });
   });
+});

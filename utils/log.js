@@ -18,6 +18,7 @@ const log = (req, res, next) => {
   const logFileName = `${endpointPath}_log.json`;
   const logFilePath = path.join(__dirname, "logs", logFileName);
 
+  // 记录请求日志
   const requestLog = {
     type: "Request",
     method: req.method,
@@ -27,22 +28,6 @@ const log = (req, res, next) => {
     headers: req.headers,
     timestamp: new Date().toISOString(),
   };
-
-  // 记录请求日志
-  fs.readFile(logFilePath, (err, fileData) => {
-    let logs = [];
-    if (!err && fileData.length) {
-      logs = JSON.parse(fileData);
-    }
-
-    logs.push(requestLog);
-
-    fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (writeErr) => {
-      if (writeErr) {
-        console.error("Failed to write log:", writeErr);
-      }
-    });
-  });
 
   // 捕获响应和错误
   const originalJson = res.json;
@@ -57,21 +42,8 @@ const log = (req, res, next) => {
       duration: `${new Date() - startTime}ms`,
     };
 
-    // 记录响应日志
-    fs.readFile(logFilePath, (err, fileData) => {
-      let logs = [];
-      if (!err && fileData.length) {
-        logs = JSON.parse(fileData);
-      }
-
-      logs.push(responseLog);
-
-      fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (writeErr) => {
-        if (writeErr) {
-          console.error("Failed to write log:", writeErr);
-        }
-      });
-    });
+    // 记录请求和响应日志到文件
+    appendToLogFile(logFilePath, requestLog, responseLog);
 
     originalJson.call(res, data);
   };
@@ -89,24 +61,39 @@ const log = (req, res, next) => {
         duration: `${new Date() - startTime}ms`,
       };
 
-      fs.readFile(logFilePath, (err, fileData) => {
-        let logs = [];
-        if (!err && fileData.length) {
-          logs = JSON.parse(fileData);
-        }
-
-        logs.push(errorLog);
-
-        fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (writeErr) => {
-          if (writeErr) {
-            console.error("Failed to write log:", writeErr);
-          }
-        });
-      });
+      appendToLogFile(logFilePath, errorLog); // 错误日志
     }
   });
 
   next();
 };
+
+// 将日志追加到文件中
+function appendToLogFile(logFilePath, ...logs) {
+  fs.readFile(logFilePath, "utf8", (err, fileData) => {
+    let logEntries = [];
+    if (!err && fileData.trim()) {
+      try {
+        logEntries = JSON.parse(fileData); // 读取现有日志
+      } catch (parseError) {
+        console.error("Error parsing existing log file:", parseError);
+        logEntries = []; // 如果日志文件有问题，重置为空
+      }
+    }
+
+    logEntries.push(...logs); // 添加新的日志条目
+    fs.writeFile(
+      logFilePath,
+      JSON.stringify(logEntries, null, 2),
+      (writeErr) => {
+        if (writeErr) {
+          console.error("Failed to write log:", writeErr);
+        } else {
+          console.log("Log written successfully.");
+        }
+      }
+    );
+  });
+}
 
 module.exports = log;

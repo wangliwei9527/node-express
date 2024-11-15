@@ -129,6 +129,7 @@ const { verifyToken, buildQuery } = require("../common");
  *         description: 成功添加房屋
  */
 app.post("/addHouse", verifyToken, (req, res) => {
+  console.log(req)
   const userId = req.user.id;
   const {
     propertyName,
@@ -208,6 +209,7 @@ app.post("/addHouse", verifyToken, (req, res) => {
     lift,
     jsonUrls
   ];
+  console.log('sql, values',sql, values)
   sqlSelect(sql, values).then((result) => {
     if (result.affectedRows > 0) {
       res.status(200).json({ message: "新增成功" });

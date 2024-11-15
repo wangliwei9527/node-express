@@ -9,6 +9,10 @@ const port = 3000;
 const cors = require('cors');
 app.use(express.json()); // 解析 JSON 请求体
 const setupSwagger = require('./swagger');
+const responseLogger = require('./utils/send')
+const json = require('./utils/json')
+app.use(responseLogger);
+app.use(json);
 setupSwagger(app);
 // app.use(express.urlencoded({ extended: true })); // 解析 URL 编码的请求体
 // 允许所有域访问

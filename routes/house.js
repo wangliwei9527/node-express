@@ -130,7 +130,7 @@ const { verifyToken, buildQuery } = require("../common");
  */
 app.post("/addHouse", verifyToken, (req, res) => {
   console.log(req)
-  const userId = req.user.id;
+  const userId = req.user.userId;
   const {
     propertyName,
     alias,

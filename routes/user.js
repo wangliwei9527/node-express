@@ -10,8 +10,8 @@ const {sqlSelect} = require('../db');
  */
 app.get('/getUser',verifyToken, async (req, res) => {
     const userId = req.user.userId;
-    const sql = `SELECT * FROM users WHERE id = ${userId}`;
-    const result = await sqlSelect(sql);
+    const sql = `SELECT * FROM users WHERE id = ?`;
+    const result = await sqlSelect(sql,[userId]);
     if(result.length === 0) {
         res.status(404).send('没有查询到用户信息');
     }else{

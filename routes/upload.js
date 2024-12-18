@@ -72,6 +72,9 @@ app.post('/upload', (req, res, next) => {
       return res.status(400).json({ message: `上传出错: ${err.message}`, code: 400 });
     }
     // 文件上传成功后的处理逻辑
+    if (req.protocol === "http") {
+      req.protocol = "https";
+    }
     const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     res.status(200).json({
       message: '图片上传成功',

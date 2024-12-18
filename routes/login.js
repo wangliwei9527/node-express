@@ -2,7 +2,15 @@ const {app} = require('../app');
 const {sqlSelect,SECRET_KEY} = require('../db');
 const {wxLogin} = require('../wxLogin');
 const {generateRandomName} = require('../common');
+const path = require("path");
 const jwt = require('jsonwebtoken');
+// 动态生成默认头像 URL
+function getFullAvatarURL(req) {
+  const host = req.get("host"); // 获取请求的主机名和端口，例如 "localhost:3000"
+  const protocol = req.protocol; // 获取请求协议，例如 "http" 或 "https"
+  const avatarPath = path.join("/uploads", "avatar.png");
+  return `${protocol}://${host}${avatarPath}`;
+}
 /**
  * @swagger
  * /login:
@@ -60,8 +68,9 @@ app.get('/login', (req, res) => {
       const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])
       if (result.length == 0) {
         const userName = generateRandomName()
-        const sql = `INSERT INTO users (username, password, openid, phone, sex, age)VALUES (?, ?, ?, ?, ?, ?)`
-        const values = [userName, password,data.openid, phone, '男', 18]
+        const defaultAvatarPath = getFullAvatarURL(req);
+        const sql = `INSERT INTO users (username, password, openid, phone, sex, age, avatar)VALUES (?, ?, ?, ?, ?, ?, ?)`
+        const values = [userName, password,data.openid, phone, '男', 18,defaultAvatarPath]
         const sqlValue = await sqlSelect(sql,values)
         if(sqlValue.affectedRows > 0){
           const newUser =await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])

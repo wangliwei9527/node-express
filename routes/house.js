@@ -129,7 +129,6 @@ const { verifyToken, buildQuery } = require("../common");
  *         description: 成功添加房屋
  */
 app.post("/addHouse", verifyToken, (req, res) => {
-  console.log(req)
   const userId = req.user.userId;
   const {
     propertyName,
@@ -164,52 +163,50 @@ app.post("/addHouse", verifyToken, (req, res) => {
     face,
     propertyMoney,
     lift,
-    image_urls
+    image_urls,
   } = req.body;
   const jsonUrls = JSON.stringify(image_urls);
   // SQL 插入语句
   const sql = `INSERT INTO house 
-  (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls) 
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
+  (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   // 插入的数据
   const values = [
-    propertyName,
-    alias,
-    totalPrice,
-    type,
-    heatingMethod,
-    electricityMethod,
-    gasMethod,
-    buildingAddress,
-    salesOfficeAddress,
-    area,
-    price,
-    picture,
-    state,
-    pageView,
-    houseType,
-    squareMeter,
-    district,
-    phone,
-    developmentArea,
-    openingDate,
-    deliveryDate,
-    decorationStatus,
-    propertyRightsDuration,
-    plannedHouseholds,
-    parkingRatio,
-    ownerName,
-    ownerContact,
-    companyName,
+    propertyName || "", // 物业名称，默认为空字符串
+    alias || "", // 别名，默认为空字符串
+    totalPrice || 0, // 总价，默认为 0
+    type || "", // 房屋类型，默认为空字符串
+    heatingMethod || "", // 供暖方式，默认为空字符串
+    electricityMethod || "", // 用电方式，默认为空字符串
+    gasMethod || "", // 用气方式，默认为空字符串
+    buildingAddress || "", // 建筑地址，默认为空字符串
+    salesOfficeAddress || "", // 售楼处地址，默认为空字符串
+    area || 0, // 面积，默认为 0
+    price || 0, // 单价，默认为 0
+    picture || "", // 房屋图片URL，默认为空字符串
+    state || "", // 房屋状态，默认为空字符串
+    pageView || 0, // 浏览量，默认为 0
+    houseType || "", // 户型，默认为空字符串
+    squareMeter || 0, // 平方米数，默认为 0
+    district || "", // 区域，默认为空字符串
+    phone || "", // 联系电话，默认为空字符串
+    developmentArea || 0, // 开发面积，默认为 0
+    openingDate || null, // 开盘日期，默认为空字符串
+    deliveryDate || null, // 交房日期，默认为空字符串
+    decorationStatus || "", // 装修状态，默认为空字符串
+    propertyRightsDuration || 0, // 产权年限，默认为 0
+    plannedHouseholds || 0, // 规划户数，默认为 0
+    parkingRatio || 0, // 车位比，默认为 0
+    ownerName || "", // 业主姓名，默认为空字符串
+    ownerContact || "", // 业主联系方式，默认为空字符串
+    companyName || "", // 开发公司名称，默认为空字符串
     userId,
-    floor,
-    face,
-    propertyMoney,
-    lift,
-    jsonUrls
+    floor || "", // 楼层，默认为空字符串
+    face || "", // 朝向，默认为空字符串
+    propertyMoney || "", // 物业费，默认为空字符串
+    lift || "", // 电梯，默认为空字符串
+    jsonUrls || "[]", // 图片数组，默认为空数组
   ];
-  console.log('sql, values',sql, values)
+  console.log("sql, values", sql, values);
   sqlSelect(sql, values).then((result) => {
     if (result.affectedRows > 0) {
       res.status(200).json({ message: "新增成功" });
@@ -359,11 +356,42 @@ app.get("/getHouse", (req, res) => {
  *                   type: string
  *                   example: 查询失败
  */
-app.get("/getHouseDetail", (req, res) => {
+app.get("/getHouseDetail", verifyToken,(req, res) => {
   // 定义一个SQL查询语句，从house表和user表中选择house表中的所有字段和user表中的phone字段，通过userId和id字段进行连接
   const itemId = req.query.itemId;
-  const sql = `SELECT * FROM house WHERE id = ${itemId}`;
-  sqlSelect(sql).then((result) => {
-    res.status(200).json({ message: "查询成功", data: result });
+  const userId = req.user.userId;
+  const sql = `
+  SELECT 
+    house.*, 
+    users.id AS userId, 
+    users.username, 
+    users.phone, 
+    users.avatar,
+    CASE 
+      WHEN collections.id IS NOT NULL THEN 1 
+      ELSE 0 
+    END AS isCollected
+  FROM 
+    house
+  INNER JOIN 
+    users 
+  ON 
+    house.userId = users.id
+  LEFT JOIN 
+    collections 
+  ON 
+    collections.item_id = house.id AND collections.user_id = ?
+  WHERE 
+    house.id = ?
+`;
+  if (!itemId) {
+    return res.status(400).json({ message: "缺少参数 itemId" });
+  }
+  sqlSelect(sql,[userId,itemId]).then((result) => {
+    if (result.length > 0) {
+      res.status(200).json({ message: "查询成功", data: result[0] });
+    } else {
+      res.status(404).json({ message: "房产信息不存在" });
+    }
   });
 });

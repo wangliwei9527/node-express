@@ -101,9 +101,9 @@ app.post('/removeCollection',verifyToken, async (req, res) => {
 
     try {
         // 删除收藏记录
-        const [result] = await sqlSelect('DELETE FROM collections WHERE user_id = ? AND item_id = ?',[userId, itemId])
+        const data = await sqlSelect('DELETE FROM collections WHERE user_id = ? AND item_id = ?',[userId, itemId])
 
-        if (result.affectedRows === 0) {
+        if (data.affectedRows === 0) {
             return res.status(400).json({ message: '该房产未收藏' });
         }
         res.status(200).json({ message: '取消收藏成功' });
@@ -168,12 +168,26 @@ app.get('/getUserCollections',verifyToken, async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
     const offset = (page - 1) * limit;
-    const sql = 'SELECT * FROM collections WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    const sql = `
+        SELECT 
+            collections.*, 
+            house.*
+        FROM 
+            collections
+        INNER JOIN 
+            house 
+        ON 
+            collections.item_id = house.id
+        WHERE 
+            collections.user_id = ?
+        ORDER BY 
+            collections.created_at DESC
+        LIMIT ? OFFSET ?`;
     try {
         // 查询用户的收藏列表，按时间排序
-        const [rows] = await sqlSelect(sql,[userId, parseInt(limit), offset])
+        const data = await sqlSelect(sql,[userId, parseInt(limit), offset])
 
-        res.status(200).json({ data: rows });
+        res.status(200).json({ data: data });
     } catch (error) {
         res.status(500).json({ message: '查询收藏失败' });
     }

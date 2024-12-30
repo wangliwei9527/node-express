@@ -2,6 +2,7 @@ const { app } = require("../app");
 const { verifyToken, buildQuery } = require("../common");
 
 let messages = [];
+
 /**
  * @swagger
  * /sendMessage:
@@ -18,14 +19,14 @@ let messages = [];
  *           schema:
  *             type: object
  *             properties:
- *               sender:
+ *               senderId:
  *                 type: string
  *                 description: 发送者的用户ID
- *                 example: "user123"
+ *                 example: "1"
  *               recipientId:
  *                 type: string
  *                 description: 接收者的用户ID
- *                 example: "user456"
+ *                 example: "9"
  *               content:
  *                 type: string
  *                 description: 消息内容
@@ -50,18 +51,32 @@ let messages = [];
  *         description: 消息发送失败，服务器错误
  */
 
-app.post("/sendMessage",verifyToken, (req, res) => {
-  const { recipientId, content } = req.body;
-  const senderId = req.user.userId; 
-  if (!recipientId || !content) {
+app.post("/sendMessage", verifyToken, (req, res) => {
+  const { recipientId, content, senderUsername, senderAvatar } = req.body;
+  const { userId: senderId } = req.user;
+
+  if (!recipientId || !content || !senderUsername || !senderAvatar) {
     return res
       .status(400)
-      .json({ success: false, message: "接收者和内容不能为空" });
+      .json({ success: false, message: "接收者、内容、发送者用户名和发送者头像不能为空" });
   }
-  const timestamp = Date.now(); // 生成当前时间戳
-  messages.push({ senderId, recipientId, content, timestamp }); // 存储消息
 
-  res.json({ success: true, message: "消息发送成功" });
+  const timestamp = Date.now(); // 生成当前时间戳
+
+  // 创建消息对象
+  const message = {
+    senderId,
+    recipientId,
+    content,
+    timestamp,
+    senderUsername,
+    senderAvatar
+  };
+
+  // 存储消息
+  messages.push(message);
+
+  res.json({ success: true, message: "消息发送成功", data: message });
 });
 
 /**
@@ -97,10 +112,10 @@ app.post("/sendMessage",verifyToken, (req, res) => {
  *                   items:
  *                     type: object
  *                     properties:
- *                       sender:
+ *                       senderId:
  *                         type: string
  *                         description: 发送者的用户ID
- *                         example: "user123"
+ *                         example: "1"
  *                       content:
  *                         type: string
  *                         description: 消息内容
@@ -115,13 +130,15 @@ app.post("/sendMessage",verifyToken, (req, res) => {
  *         description: 获取消息失败，服务器错误
  */
 
-app.get("/getMessages",verifyToken, (req, res) => {
+app.get("/getMessages", verifyToken, (req, res) => {
   const lastTimestamp = parseInt(req.query.lastTimestamp, 10) || 0;
   const userId = req.user.userId;
+  console.log('userId', userId);
 
-  // 筛选出比上次时间戳新的消息并且是该用户接收到的
+  // 筛选出时间大于lastTimestamp的消息，且发送人或接收人是当前用户
   const newMessages = messages.filter((msg) => {
-    return msg.timestamp > lastTimestamp && msg.recipientId === userId;
+    return msg.timestamp > lastTimestamp && 
+           (msg.recipientId == userId || msg.senderId == userId);
   });
 
   res.json({

@@ -2,21 +2,12 @@ const express = require("express");
 const path = require("path");
 const app = express();
 const port = 3000;
-// const logger = require("./utils/logger"); // 引入自定义日志模块
-// // 请求日志中间件
-// app.use(async (req, res, next) => {
-//   const startTime = new Date();
-//   await logger.logRequest(req); // 记录请求日志
-
-//   const originalJson = res.json;
-//   res.json = async (data) => {
-//     const duration = new Date() - startTime;
-//     await logger.logResponse(res, data, duration); // 记录响应日志
-//     originalJson.call(res, data);
-//   };
-
-//   next();
-// });
+const https = require('https');
+// 加载 SSL 证书文件
+// const options = {
+//   key: fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/privkey.pem'),
+//   cert: fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/fullchain.pem'),
+// };
 const cors = require("cors");
 app.use(express.json()); // 解析 JSON 请求体
 const setupSwagger = require("./swagger");

@@ -78,7 +78,8 @@ app.get('/login', (req, res) => {
           res.send({
             code: 200,
             msg: '注册成功',
-            token
+            token,
+            userId:newUser[0].id
           })
         }else{
           res.send({
@@ -92,7 +93,8 @@ app.get('/login', (req, res) => {
         res.send({
             code: 200,
             msg: '注册成功',
-            token
+            token,
+            userId:result[0].id
           })
       }
       

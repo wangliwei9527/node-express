@@ -1,8 +1,26 @@
 const { app } = require("../app");
 const { verifyToken, buildQuery } = require("../common");
-
-let messages = [];
-
+const fs = require("fs");
+const path = require("path");
+const MESSAGES_FILE_PATH = path.join(__dirname, "messages.json");
+function readMessagesFromFile() {
+  try {
+    const data = fs.readFileSync(MESSAGES_FILE_PATH, "utf-8");
+    return JSON.parse(data);
+  } catch (err) {
+    console.error("读取消息文件失败:", err);
+    return []; // 如果文件不存在或有错误，返回空数组
+  }
+}
+function saveMessagesToFile() {
+  try {
+    const data = JSON.stringify(messages, null, 2); // 格式化为 JSON 字符串
+    fs.writeFileSync(MESSAGES_FILE_PATH, data, "utf-8");
+  } catch (err) {
+    console.error("保存消息文件失败:", err);
+  }
+}
+let messages = readMessagesFromFile();
 /**
  * @swagger
  * /sendMessage:
@@ -52,7 +70,7 @@ let messages = [];
  */
 
 app.post("/sendMessage", verifyToken, (req, res) => {
-  const { recipientId, content, senderUsername, senderAvatar } = req.body;
+  const { recipientId, content, senderUsername, senderAvatar,timestamp } = req.body;
   const { userId: senderId } = req.user;
 
   if (!recipientId || !content || !senderUsername || !senderAvatar) {
@@ -60,8 +78,6 @@ app.post("/sendMessage", verifyToken, (req, res) => {
       .status(400)
       .json({ success: false, message: "接收者、内容、发送者用户名和发送者头像不能为空" });
   }
-
-  const timestamp = Date.now(); // 生成当前时间戳
 
   // 创建消息对象
   const message = {
@@ -75,7 +91,7 @@ app.post("/sendMessage", verifyToken, (req, res) => {
 
   // 存储消息
   messages.push(message);
-
+  saveMessagesToFile();
   res.json({ success: true, message: "消息发送成功", data: message });
 });
 

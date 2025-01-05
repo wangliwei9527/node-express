@@ -356,42 +356,69 @@ app.get("/getHouse", (req, res) => {
  *                   type: string
  *                   example: 查询失败
  */
-app.get("/getHouseDetail", verifyToken,(req, res) => {
-  // 定义一个SQL查询语句，从house表和user表中选择house表中的所有字段和user表中的phone字段，通过userId和id字段进行连接
+app.get("/getHouseDetail", verifyToken, (req, res) => {
   const itemId = req.query.itemId;
   const userId = req.user.userId;
+
+  // 查询房产信息
   const sql = `
-  SELECT 
-    house.*, 
-    users.id AS userId, 
-    users.username, 
-    users.phone, 
-    users.avatar,
-    CASE 
-      WHEN collections.id IS NOT NULL THEN 1 
-      ELSE 0 
-    END AS isCollected
-  FROM 
-    house
-  INNER JOIN 
-    users 
-  ON 
-    house.userId = users.id
-  LEFT JOIN 
-    collections 
-  ON 
-    collections.item_id = house.id AND collections.user_id = ?
-  WHERE 
-    house.id = ?
-`;
+    SELECT 
+      house.*, 
+      users.id AS userId, 
+      users.username, 
+      users.phone, 
+      users.avatar,
+      CASE 
+        WHEN collections.id IS NOT NULL THEN 1 
+        ELSE 0 
+      END AS isCollected
+    FROM 
+      house
+    INNER JOIN 
+      users 
+    ON 
+      house.userId = users.id
+    LEFT JOIN 
+      collections 
+    ON 
+      collections.item_id = house.id AND collections.user_id = ?
+    WHERE 
+      house.id = ?
+  `;
+  
   if (!itemId) {
     return res.status(400).json({ message: "缺少参数 itemId" });
   }
-  sqlSelect(sql,[userId,itemId]).then((result) => {
-    if (result.length > 0) {
-      res.status(200).json({ message: "查询成功", data: result[0] });
+
+  sqlSelect(sql, [userId, itemId]).then((houseResult) => {
+    if (houseResult.length > 0) {
+      const houseData = houseResult[0];
+
+      // 查询用户信息
+      const userSql = `SELECT username, avatar FROM users WHERE id = ?`;
+      sqlSelect(userSql, [houseData.userId]).then((userResult) => {
+        if (userResult.length > 0) {
+          const userData = userResult[0];
+
+          // 将查询到的用户信息添加到房产数据中
+          houseData.username = userData.username;
+          houseData.avatar = userData.avatar;
+
+          res.status(200).json({ message: "查询成功", data: houseData });
+        } else {
+          res.status(404).json({ message: "用户信息不存在" });
+        }
+      }).catch((err) => {
+        console.error("查询用户信息失败:", err);
+        res.status(500).json({ message: "服务器错误" });
+      });
+
     } else {
       res.status(404).json({ message: "房产信息不存在" });
     }
+  }).catch((err) => {
+    console.error("查询房产信息失败:", err);
+    res.status(500).json({ message: "服务器错误" });
   });
 });
+

@@ -421,4 +421,196 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
     res.status(500).json({ message: "服务器错误" });
   });
 });
+/**
+ * @swagger
+ * /search:
+ *   post:
+ *     summary: 房屋信息模糊查询
+ *     description: 根据传入的多个可选条件进行房屋信息的模糊查询，返回符合条件的房屋列表。
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               alias:
+ *                 type: string
+ *                 description: 房屋别名
+ *               area:
+ *                 type: number
+ *                 description: 房屋面积
+ *               houseType:
+ *                 type: string
+ *                 description: 户型
+ *               floor:
+ *                 type: string
+ *                 description: 楼层
+ *               face:
+ *                 type: string
+ *                 description: 朝向
+ *               decorationStatus:
+ *                 type: string
+ *                 description: 装修状态
+ *               type:
+ *                 type: string
+ *                 description: 房屋类型
+ *               lift:
+ *                 type: string
+ *                 description: 电梯
+ *               propertyMoney:
+ *                 type: string
+ *                 description: 物业费
+ *               propertyName:
+ *                 type: string
+ *                 description: 物业名称
+ *     responses:
+ *       200:
+ *         description: 查询成功，返回符合条件的房屋列表。
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 查询成功
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: 房屋ID
+ *                         example: 1
+ *                       propertyName:
+ *                         type: string
+ *                         description: 物业名称
+ *                         example: '小区A'
+ *                       alias:
+ *                         type: string
+ *                         description: 房屋别名
+ *                         example: '别墅'
+ *                       area:
+ *                         type: number
+ *                         description: 面积
+ *                         example: 100.5
+ *                       houseType:
+ *                         type: string
+ *                         description: 户型
+ *                         example: '三室一厅'
+ *                       floor:
+ *                         type: string
+ *                         description: 楼层
+ *                         example: '2楼'
+ *                       face:
+ *                         type: string
+ *                         description: 朝向
+ *                         example: '南'
+ *                       decorationStatus:
+ *                         type: string
+ *                         description: 装修状态
+ *                         example: '精装'
+ *                       type:
+ *                         type: string
+ *                         description: 房屋类型
+ *                         example: '住宅'
+ *                       lift:
+ *                         type: string
+ *                         description: 电梯
+ *                         example: '有'
+ *                       propertyMoney:
+ *                         type: string
+ *                         description: 物业费
+ *                         example: '500元/月'
+ *                       propertyName:
+ *                         type: string
+ *                         description: 物业名称
+ *                         example: '阳光小区'
+ *       400:
+ *         description: 请求失败，缺少至少一个查询条件。
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: '至少传一个条件'
+ *       500:
+ *         description: 服务器错误，查询失败。
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: '数据库查询失败'
+ */
+app.post('/search', async (req, res) => {
+  const { alias, area, houseType, floor, face, decorationStatus, type,lift ,propertyMoney,propertyName} = req.body;
+
+  // 初始化查询条件
+  let conditions = [];
+  let values = [];
+
+  if (alias) {
+    conditions.push("alias LIKE ?");
+    values.push(`%${alias}%`);
+  }
+  if (area) {
+    conditions.push("area LIKE ?");
+    values.push(`%${area}%`);
+  }
+  if (houseType) {
+    conditions.push("houseType LIKE ?");
+    values.push(`%${houseType}%`);
+  }
+  if (floor) {
+    conditions.push("floor LIKE ?");
+    values.push(`%${floor}%`);
+  }
+  if (face) {
+    conditions.push("face LIKE ?");
+    values.push(`%${face}%`);
+  }
+  if (decorationStatus) {
+    conditions.push("decorationStatus LIKE ?");
+    values.push(`%${decorationStatus}%`);
+  }
+  if (type) {
+    conditions.push("type LIKE ?");
+    values.push(`%${type}%`);
+  }
+  if (lift) {
+    conditions.push("lift LIKE ?");
+    values.push(`%${lift}%`);
+  }
+  if (propertyMoney) {
+    conditions.push("propertyMoney LIKE ?");
+    values.push(`%${propertyMoney}%`);
+  }
+  if (propertyName) {
+    conditions.push("propertyName LIKE ?");
+    values.push(`%${propertyName}%`);
+  }
+
+  // 如果没有任何条件，返回错误
+  if (conditions.length === 0) {
+    return res.status(400).json({ message: '至少传一个条件' });
+  }
+
+  // 构建 SQL 查询
+  const sql = `SELECT * FROM house WHERE ${conditions.join(' OR ')}`;
+  
+  try {
+    // 执行查询
+    const results = await sqlSelect(sql, values);
+    res.status(200).json({ message: "查询成功", data: results });
+  } catch (error) {
+    res.status(500).json({ message: 'Database query failed', error });
+  }
+});
 

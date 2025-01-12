@@ -70,13 +70,17 @@ let messages = readMessagesFromFile();
  */
 
 app.post("/sendMessage", verifyToken, (req, res) => {
-  const { recipientId, content, senderUsername, senderAvatar,timestamp } = req.body;
+  const { recipientId, content, senderUsername, senderAvatar, timestamp } =
+    req.body;
   const { userId: senderId } = req.user;
 
   if (!recipientId || !content || !senderUsername || !senderAvatar) {
     return res
       .status(400)
-      .json({ success: false, message: "接收者、内容、发送者用户名和发送者头像不能为空" });
+      .json({
+        success: false,
+        message: "接收者、内容、发送者用户名和发送者头像不能为空",
+      });
   }
 
   // 创建消息对象
@@ -86,7 +90,7 @@ app.post("/sendMessage", verifyToken, (req, res) => {
     content,
     timestamp,
     senderUsername,
-    senderAvatar
+    senderAvatar,
   };
 
   // 存储消息
@@ -148,13 +152,24 @@ app.post("/sendMessage", verifyToken, (req, res) => {
 
 app.get("/getMessages", verifyToken, (req, res) => {
   const lastTimestamp = parseInt(req.query.lastTimestamp, 10) || 0;
+  const recipientId = req.query.recipientId;
   const userId = req.user.userId;
-  console.log('userId', userId);
+  console.log("userId", userId);
 
   // 筛选出时间大于lastTimestamp的消息，且发送人或接收人是当前用户
   const newMessages = messages.filter((msg) => {
-    return msg.timestamp > lastTimestamp && 
-           (msg.recipientId == userId || msg.senderId == userId);
+    if (recipientId) {
+      return (
+        msg.timestamp > lastTimestamp &&
+        ((msg.recipientId == userId && msg.senderId == recipientId) ||
+          (msg.senderId == userId && msg.recipientId == recipientId))
+      );
+    } else {
+      return (
+        msg.timestamp > lastTimestamp &&
+        (msg.recipientId == userId || msg.senderId == userId)
+      );
+    }
   });
 
   res.json({
@@ -162,4 +177,3 @@ app.get("/getMessages", verifyToken, (req, res) => {
     messages: newMessages,
   });
 });
-

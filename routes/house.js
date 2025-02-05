@@ -524,10 +524,6 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
  *                         type: string
  *                         description: 物业费
  *                         example: '500元/月'
- *                       propertyName:
- *                         type: string
- *                         description: 物业名称
- *                         example: '阳光小区'
  *       400:
  *         description: 请求失败，缺少至少一个查询条件。
  *         content:

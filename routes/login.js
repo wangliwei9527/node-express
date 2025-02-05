@@ -61,42 +61,52 @@ function getFullAvatarURL(req) {
  *                   example: 500
  */
 app.get('/login', (req, res) => {
-    const code = req.query.code
-    const phone = req.query.phone
-    const password = req.query.password
-    wxLogin(code).then(async (data) => {
-      const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])
-      if (result.length == 0) {
-        const userName = generateRandomName()
-        const defaultAvatarPath = getFullAvatarURL(req);
-        const sql = `INSERT INTO users (username, password, openid, phone, sex, age, avatar)VALUES (?, ?, ?, ?, ?, ?, ?)`
-        const values = [userName, password,data.openid, phone, '男', 18,defaultAvatarPath]
-        const sqlValue = await sqlSelect(sql,values)
-        if(sqlValue.affectedRows > 0){
-          const newUser =await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid])
-          const token = jwt.sign({ openid:data.openid,userId:newUser[0].id,phone:phone }, SECRET_KEY, { expiresIn: '365d' });
-          res.send({
-            code: 200,
-            msg: '注册成功',
-            token,
-            userId:newUser[0].id
-          })
-        }else{
-          res.send({
-            msg: '注册失败',
-            code: 500
-          }
-          )
-        }
-      }else{
-        const token = jwt.sign({ openid:data.openid,userId:result[0].id,phone:phone }, SECRET_KEY, { expiresIn: '365d' });
+  const code = req.query.code;
+  const phone = req.query.phone;
+  const password = req.query.password;
+
+  wxLogin(code).then(async (data) => {
+    const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid]);
+
+    if (result.length == 0) {
+      // 用户不存在，进行注册流程
+      const userName = generateRandomName();
+      const defaultAvatarPath = getFullAvatarURL(req);
+      const sql = `INSERT INTO users (username, password, openid, phone, sex, age, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      const values = [userName, password, data.openid, phone, '男', 18, defaultAvatarPath];
+      const sqlValue = await sqlSelect(sql, values);
+
+      if (sqlValue.affectedRows > 0) {
+        const newUser = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid]);
+        const token = jwt.sign({ openid: data.openid, userId: newUser[0].id, phone: phone }, SECRET_KEY, { expiresIn: '365d' });
         res.send({
-            code: 200,
-            msg: '注册成功',
-            token,
-            userId:result[0].id
-          })
+          code: 200,
+          msg: '注册成功',
+          token,
+          userId: newUser[0].id,
+        });
+      } else {
+        res.send({
+          msg: '注册失败',
+          code: 500,
+        });
       }
-      
-    })
-  })
+    } else {
+      // 用户已存在，进行密码校验
+      if (result[0].password === password) {
+        const token = jwt.sign({ openid: data.openid, userId: result[0].id, phone: phone }, SECRET_KEY, { expiresIn: '365d' });
+        res.send({
+          code: 200,
+          msg: '登录成功',
+          token,
+          userId: result[0].id,
+        });
+      } else {
+        res.send({
+          code: 401,
+          msg: '密码错误',
+        });
+      }
+    }
+  });
+});

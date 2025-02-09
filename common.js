@@ -66,6 +66,34 @@ function buildQuery(filters) {
 
   return baseQuery;
 }
+
+function buildCommentTree(comments) {
+  console.log('comments',comments);
+  const commentMap = {};
+  const tree = [];
+
+  // 将所有评论按 ID 存储在 commentMap 中，方便查找
+  comments.forEach(comment => {
+    commentMap[comment.commentId] = { ...comment, children: [] };
+  });
+
+  // 遍历评论，构建树结构
+  comments.forEach(comment => {
+    if (comment.parentCommentId) {
+      // 如果有 parentCommentId，说明是回复评论，添加到父评论的 children 数组
+      const parent = commentMap[comment.parentCommentId];
+      if (parent) {
+        parent.children.push(commentMap[comment.commentId]);
+      }
+    } else {
+      // 如果没有 parentCommentId，说明是一级评论，直接添加到树中
+      tree.push(commentMap[comment.commentId]);
+    }
+  });
+
+  return tree;
+}
 exports.verifyToken = verifyToken;
 exports.generateRandomName = generateRandomName;
 exports.buildQuery = buildQuery;
+exports.buildCommentTree = buildCommentTree;

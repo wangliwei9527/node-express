@@ -59,7 +59,13 @@ function buildQuery(filters) {
   if (filters.userId) {
     conditions.push(`house.userId = '${filters.userId}'`);
   }
-
+  if (filters.city) {
+    conditions.push(`house.city = '${filters.city}'`);
+  }
+  if (filters.companyName) {
+    // 模糊匹配
+    conditions.push(`house.companyName LIKE '%${filters.companyName}%'`);
+  }
   if (conditions.length > 0) {
     baseQuery += " WHERE " + conditions.join(" AND ");
   }

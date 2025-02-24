@@ -164,11 +164,12 @@ app.post("/addHouse", verifyToken, (req, res) => {
     propertyMoney,
     lift,
     image_urls,
+    city,
   } = req.body;
   const jsonUrls = JSON.stringify(image_urls);
   // SQL 插入语句
   const sql = `INSERT INTO house 
-  (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   // 插入的数据
   const values = [
     propertyName || "", // 物业名称，默认为空字符串
@@ -205,6 +206,7 @@ app.post("/addHouse", verifyToken, (req, res) => {
     propertyMoney || "", // 物业费，默认为空字符串
     lift || "", // 电梯，默认为空字符串
     jsonUrls || "[]", // 图片数组，默认为空数组
+    city || "", // 城市，默认为空字符串
   ];
   console.log("sql, values", sql, values);
   sqlSelect(sql, values).then((result) => {
@@ -420,7 +422,11 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
   sqlSelect(sql, [userId, itemId]).then((houseResult) => {
     if (houseResult.length > 0) {
       const houseData = houseResult[0];
-      houseData.commentTree = buildCommentTree(houseData.comments);
+      if(houseData && houseData.comments){
+        houseData.commentTree = buildCommentTree(houseData.comments);
+      }else{
+        houseData.commentTree = [];
+      }
       delete houseData.comments;
 
       // 查询用户信息

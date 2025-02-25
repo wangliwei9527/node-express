@@ -1,13 +1,14 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const port = 3000;
 const https = require('https');
+const fs = require('fs');
+const port = 3000;
 // 加载 SSL 证书文件
-// const options = {
-//   key: fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/privkey.pem'),
-//   cert: fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/fullchain.pem'),
-// };
+const options = {
+  key: fs.readFileSync('/install/zhufangzhijia.cn.key'),
+  cert: fs.readFileSync('/install/zhufangzhijia.cn.pem'),
+};
 const cors = require("cors");
 app.use(express.json()); // 解析 JSON 请求体
 const setupSwagger = require("./swagger");
@@ -18,6 +19,7 @@ app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 module.exports = { app };
 require("./routes/index");
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+https.createServer(options, app).listen(443, () => {
+  console.log('HTTPS server running on zhufangzhijia.cn');
 });
+

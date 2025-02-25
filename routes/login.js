@@ -4,7 +4,7 @@ const {wxLogin} = require('../wxLogin');
 const {generateRandomName} = require('../common');
 const path = require("path");
 const jwt = require('jsonwebtoken');
-// 生成默认头像 URL
+// 动态生成默认头像 URL
 function getFullAvatarURL(req) {
   const host = req.get("host"); // 获取请求的主机名和端口，例如 "localhost:3000"
   const protocol = req.protocol; // 获取请求协议，例如 "http" 或 "https"

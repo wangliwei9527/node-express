@@ -389,16 +389,17 @@ app.get("/getHouse", (req, res) => {
  *                   type: string
  *                   example: 查询失败
  */
-app.get("/getHouseDetail", verifyToken, (req, res) => {
+app.get("/getHouseDetail", (req, res) => {
   try {
     const itemId = req.query.itemId;
-    const userId = req.user.userId;
+    // 检查用户是否登录，如果未登录则userId为null
+    const userId = req.user ? req.user.userId : null;
 
     if (!itemId) {
       return res.status(400).json({ message: "缺少参数 itemId", api: "/getHouseDetail" });
     }
 
-    // 查询房产和用户信息，同时查询评论
+    // 修改SQL查询以处理userId为null的情况
     const sql = `
     SELECT 
       house.*, 
@@ -407,6 +408,7 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
       users.phone, 
       users.avatar,
       CASE 
+        WHEN ? IS NULL THEN 0 -- 未登录用户始终返回未收藏(0)
         WHEN collections.id IS NOT NULL THEN 1 
         ELSE 0 
       END AS isCollected,
@@ -440,13 +442,15 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
     LEFT JOIN 
       collections 
     ON 
-      collections.item_id = house.id AND collections.user_id = ?
+      ? IS NOT NULL -- 只有登录用户才检查收藏情况
+      AND collections.item_id = house.id 
+      AND collections.user_id = ?
     WHERE 
       house.id = ? AND house.is_deleted = 0
     `;
 
-    // 执行查询
-    sqlSelect(sql, [userId, itemId]).then((houseResult) => {
+    // 执行查询，注意参数顺序与SQL中的问号一一对应
+    sqlSelect(sql, [userId, userId, userId, itemId]).then((houseResult) => {
       if (houseResult.length > 0) {
         const houseData = houseResult[0];
         if(houseData && houseData.comments){

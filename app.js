@@ -3,12 +3,12 @@ const path = require("path");
 const app = express();
 const https = require('https');
 const fs = require('fs');
-const port = 3000;
+// const port = 3000;
 // 加载 SSL 证书文件
-// const options = {
-//   key: fs.readFileSync('/install/zhufangzhijia.cn.key'),
-//   cert: fs.readFileSync('/install/zhufangzhijia.cn.pem'),
-// };
+const options = {
+  key: fs.readFileSync('/install/zhufangzhijia.cn.key'),
+  cert: fs.readFileSync('/install/zhufangzhijia.cn.pem'),
+};
 const cors = require("cors");
 app.use(express.json()); // 解析 JSON 请求体
 const setupSwagger = require("./swagger");
@@ -19,10 +19,10 @@ app.use(cors());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 module.exports = { app };
 require("./routes/index");
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
-// https.createServer(options, app).listen(443, () => {
-//   console.log('HTTPS server running on zhufangzhijia.cn');
+// app.listen(3000, () => {
+//   console.log("Server is running on port 3000");
 // });
+https.createServer(options, app).listen(443, () => {
+  console.log('HTTPS server running on zhufangzhijia.cn');
+});
 

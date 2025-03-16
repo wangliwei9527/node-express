@@ -124,6 +124,15 @@ const { verifyToken, buildQuery,buildCommentTree } = require("../common");
  *               image_urls:
  *                 type: string
  *                 description: 图片数组
+ *               city:
+ *                 type: string
+ *                 description: 城市
+ *               urgent:
+ *                 type: boolean
+ *                 description: 紧急
+ *               describe:
+ *                 type: string
+ *                 description: 描述
  *     responses:
  *       200:
  *         description: 成功添加房屋
@@ -166,12 +175,13 @@ app.post("/addHouse", verifyToken, (req, res) => {
       lift,
       image_urls,
       city,
-      urgent
+      urgent,
+      describe
     } = req.body;
     const jsonUrls = JSON.stringify(image_urls || []);
     // SQL 插入语句
     const sql = `INSERT INTO house 
-    (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city,urgent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city,urgent,describe) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     // 插入的数据
     const values = [
       propertyName || "", 
@@ -209,7 +219,8 @@ app.post("/addHouse", verifyToken, (req, res) => {
       lift || "", 
       jsonUrls || "[]", 
       city || "", 
-      urgent || false 
+      urgent || false,
+      describe || ""
     ];
     
     console.log("sql, values", sql, values);

@@ -92,8 +92,9 @@ app.post('/addCollection', verifyToken,async (req, res) => {
  *         description: 取消收藏失败
  */
 app.post('/removeCollection',verifyToken, async (req, res) => {
-    const userId = req.user.userId;
-    const { itemId } = req.body;
+    try {
+        const userId = req.user.userId;
+        const { itemId } = req.body;
 
     if (!userId || !itemId) {
         return res.status(400).json({ message: '缺少参数itemId' });
@@ -109,6 +110,10 @@ app.post('/removeCollection',verifyToken, async (req, res) => {
         res.status(200).json({ message: '取消收藏成功' });
     } catch (error) {
         res.status(500).json({ message: '取消收藏失败' });
+    }
+    } catch (error) {
+        console.error("取消收藏失败:", error);
+        res.status(500).json({ message: '取消收藏失败', error: error.message, api: "/removeCollection" });
     }
 });
 
@@ -164,8 +169,9 @@ app.post('/removeCollection',verifyToken, async (req, res) => {
  *         description: 查询收藏失败
  */
 app.get('/getUserCollections',verifyToken, async (req, res) => {
-    const userId = req.user.userId;
-    const { page = 1, limit = 10 } = req.query;
+    try {
+        const userId = req.user.userId;
+        const { page = 1, limit = 10 } = req.query;
 
     const offset = (page - 1) * limit;
     const sql = `
@@ -190,6 +196,10 @@ app.get('/getUserCollections',verifyToken, async (req, res) => {
         res.status(200).json({ data: data });
     } catch (error) {
         res.status(500).json({ message: '查询收藏失败' });
+    }
+    } catch (error) {
+        console.error("查询收藏失败:", error);
+        res.status(500).json({ message: '查询收藏失败', error: error.message, api: "/getUserCollections" });
     }
 });
 

@@ -61,9 +61,10 @@ function getFullAvatarURL(req) {
  *                   example: 500
  */
 app.get('/login', (req, res) => {
-  const code = req.query.code;
-  const phone = req.query.phone;
-  const password = req.query.password;
+  try {
+    const code = req.query.code;
+    const phone = req.query.phone;
+    const password = req.query.password;
 
   wxLogin(code).then(async (data) => {
     const result = await sqlSelect('SELECT * FROM users WHERE openid = ?', [data.openid]);
@@ -109,4 +110,8 @@ app.get('/login', (req, res) => {
       }
     }
   });
+  } catch (error) {
+    console.error("登录失败:", error);
+    res.status(500).json({ message: "登录失败", error: error.message, api: "/login" });
+  }
 });

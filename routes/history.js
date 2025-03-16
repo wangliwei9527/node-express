@@ -39,9 +39,10 @@ const { verifyToken } = require("../common");
  *         description: 新增浏览记录失败
  */
 app.post("/recordView", verifyToken, async (req, res) => {
-  const { itemId } = req.body;
-  const userId = req.user.userId;
-  if (!userId || !itemId) {
+  try {
+    const { itemId } = req.body;
+    const userId = req.user.userId;
+    if (!userId || !itemId) {
     return res.status(400).json({ message: "用户id或者房产id不能为空" });
   }
   const sql =
@@ -57,6 +58,10 @@ app.post("/recordView", verifyToken, async (req, res) => {
     res.status(200).json({ message: "新增浏览记录成功" });
   } catch (error) {
     res.status(500).json({ message: "新增浏览记录失败" });
+  }
+  } catch (error) {
+    console.error("新增浏览记录失败:", error);
+    res.status(500).json({ message: "新增浏览记录失败", error: error.message, api: "/recordView" });
   }
 });
 
@@ -114,9 +119,10 @@ app.post("/recordView", verifyToken, async (req, res) => {
  *         description: 查询浏览记录失败
  */
 app.get("/getBrowsingHistory", verifyToken, async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
-  const userId = req.user.userId;
-  if (!userId) {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const userId = req.user.userId;
+    if (!userId) {
     return res.status(400).json({ message: "userId is required" });
   }
 
@@ -134,5 +140,9 @@ app.get("/getBrowsingHistory", verifyToken, async (req, res) => {
     res.status(200).json({ data: rows });
   } catch (error) {
     res.status(500).json({ message: "查询浏览记录失败" });
+  }
+  } catch (error) {
+    console.error("查询浏览记录失败:", error);
+    res.status(500).json({ message: "查询浏览记录失败", error: error.message, api: "/getBrowsingHistory" });
   }
 });

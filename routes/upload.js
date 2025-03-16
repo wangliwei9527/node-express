@@ -63,9 +63,10 @@ const upload = multer({ storage: storage });
  *                   example: 图片上传失败
  */
 app.post('/upload', (req, res, next) => {
-  upload.single('file')(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      // Multer 错误
+  try {
+    upload.single('file')(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        // Multer 错误
       return res.status(400).json({ message: `文件上传失败: ${err.message}`, code: 400 });
     } else if (err) {
       // 其他错误
@@ -82,4 +83,8 @@ app.post('/upload', (req, res, next) => {
       code: 200,
     });
   });
+  } catch (error) {
+    console.error("图片上传失败:", error);
+    res.status(500).json({ message: "图片上传失败", error: error.message, api: "/upload" });
+  }
 });

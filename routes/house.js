@@ -129,93 +129,104 @@ const { verifyToken, buildQuery,buildCommentTree } = require("../common");
  *         description: 成功添加房屋
  */
 app.post("/addHouse", verifyToken, (req, res) => {
-  const userId = req.user.userId;
-  const {
-    propertyName,
-    alias,
-    totalPrice,
-    type,
-    heatingMethod,
-    electricityMethod,
-    gasMethod,
-    buildingAddress,
-    salesOfficeAddress,
-    area,
-    price,
-    picture,
-    state,
-    pageView,
-    houseType,
-    squareMeter,
-    district,
-    phone,
-    developmentArea,
-    openingDate,
-    deliveryDate,
-    decorationStatus,
-    propertyRightsDuration,
-    plannedHouseholds,
-    parkingRatio,
-    ownerName,
-    ownerContact,
-    companyName,
-    floor,
-    face,
-    propertyMoney,
-    lift,
-    image_urls,
-    city,
-  } = req.body;
-  const jsonUrls = JSON.stringify(image_urls);
-  // SQL 插入语句
-  const sql = `INSERT INTO house 
-  (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  // 插入的数据
-  const values = [
-    propertyName || "", // 物业名称，默认为空字符串
-    alias || "", // 别名，默认为空字符串
-    totalPrice || 0, // 总价，默认为 0
-    type || "", // 房屋类型，默认为空字符串
-    heatingMethod || "", // 供暖方式，默认为空字符串
-    electricityMethod || "", // 用电方式，默认为空字符串
-    gasMethod || "", // 用气方式，默认为空字符串
-    buildingAddress || "", // 建筑地址，默认为空字符串
-    salesOfficeAddress || "", // 售楼处地址，默认为空字符串
-    area || 0, // 面积，默认为 0
-    price || 0, // 单价，默认为 0
-    picture || "", // 房屋图片URL，默认为空字符串
-    state || "", // 房屋状态，默认为空字符串
-    pageView || 0, // 浏览量，默认为 0
-    houseType || "", // 户型，默认为空字符串
-    squareMeter || 0, // 平方米数，默认为 0
-    district || "", // 区域，默认为空字符串
-    phone || "", // 联系电话，默认为空字符串
-    developmentArea || 0, // 开发面积，默认为 0
-    openingDate || null, // 开盘日期，默认为空字符串
-    deliveryDate || null, // 交房日期，默认为空字符串
-    decorationStatus || "", // 装修状态，默认为空字符串
-    propertyRightsDuration || 0, // 产权年限，默认为 0
-    plannedHouseholds || 0, // 规划户数，默认为 0
-    parkingRatio || 0, // 车位比，默认为 0
-    ownerName || "", // 业主姓名，默认为空字符串
-    ownerContact || "", // 业主联系方式，默认为空字符串
-    companyName || "", // 开发公司名称，默认为空字符串
-    userId,
-    floor || "", // 楼层，默认为空字符串
-    face || "", // 朝向，默认为空字符串
-    propertyMoney || "", // 物业费，默认为空字符串
-    lift || "", // 电梯，默认为空字符串
-    jsonUrls || "[]", // 图片数组，默认为空数组
-    city || "", // 城市，默认为空字符串
-  ];
-  console.log("sql, values", sql, values);
-  sqlSelect(sql, values).then((result) => {
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "新增成功" });
-    } else {
-      res.status(200).json({ message: "新增失败" });
-    }
-  });
+  try {
+    const userId = req.user.userId;
+    const {
+      propertyName,
+      alias,
+      totalPrice,
+      type,
+      heatingMethod,
+      electricityMethod,
+      gasMethod,
+      buildingAddress,
+      salesOfficeAddress,
+      area,
+      price,
+      picture,
+      state,
+      pageView,
+      houseType,
+      squareMeter,
+      district,
+      phone,
+      developmentArea,
+      openingDate,
+      deliveryDate,
+      decorationStatus,
+      propertyRightsDuration,
+      plannedHouseholds,
+      parkingRatio,
+      ownerName,
+      ownerContact,
+      companyName,
+      floor,
+      face,
+      propertyMoney,
+      lift,
+      image_urls,
+      city,
+      urgent
+    } = req.body;
+    const jsonUrls = JSON.stringify(image_urls || []);
+    // SQL 插入语句
+    const sql = `INSERT INTO house 
+    (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city,urgent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    // 插入的数据
+    const values = [
+      propertyName || "", 
+      alias || "", 
+      totalPrice || 0, 
+      type || "", 
+      heatingMethod || "", 
+      electricityMethod || "", 
+      gasMethod || "", 
+      buildingAddress || "", 
+      salesOfficeAddress || "", 
+      area || 0, 
+      price || 0, 
+      picture || "", 
+      state || "", 
+      pageView || 0, 
+      houseType || "", 
+      squareMeter || 0, 
+      district || "", 
+      phone || "", 
+      developmentArea || 0, 
+      openingDate || null, 
+      deliveryDate || null, 
+      decorationStatus || "", 
+      propertyRightsDuration || 0, 
+      plannedHouseholds || 0, 
+      parkingRatio || 0, 
+      ownerName || "", 
+      ownerContact || "", 
+      companyName || "", 
+      userId,
+      floor || "", 
+      face || "", 
+      propertyMoney || "", 
+      lift || "", 
+      jsonUrls || "[]", 
+      city || "", 
+      urgent || false 
+    ];
+    
+    console.log("sql, values", sql, values);
+    sqlSelect(sql, values).then((result) => {
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: "新增成功" });
+      } else {
+        res.status(200).json({ message: "新增失败" });
+      }
+    }).catch(error => {
+      console.error("新增房屋失败:", error);
+      res.status(500).json({ message: "新增失败", error: error.message, api: "/addHouse" });
+    });
+  } catch (error) {
+    console.error("新增房屋处理异常:", error);
+    res.status(500).json({ message: "处理请求异常", error: error.message, api: "/addHouse" });
+  }
 });
 /**
  * @swagger
@@ -285,14 +296,18 @@ app.post("/addHouse", verifyToken, (req, res) => {
  */
 app.get("/getHouse", (req, res) => {
   try {
-  const filters = req.query;
-  // 在查询时添加 is_deleted = 0 条件
-  const sql = buildQuery(filters) + " AND is_deleted = 0";
-  sqlSelect(sql).then((result) => {
-    res.status(200).json({ message: "查询成功", data: result });
-  });
+    const filters = req.query;
+    // 在查询时添加 is_deleted = 0 条件
+    const sql = buildQuery(filters) + " AND is_deleted = 0";
+    sqlSelect(sql).then((result) => {
+      res.status(200).json({ message: "查询成功", data: result });
+    }).catch(error => {
+      console.error("获取房屋列表失败:", error);
+      res.status(500).json({ message: "查询失败", error: error.message, api: "/getHouse" });
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("获取房屋列表处理异常:", error);
+    res.status(500).json({ message: "处理请求异常", error: error.message, api: "/getHouse" });
   }
 });
 
@@ -364,97 +379,102 @@ app.get("/getHouse", (req, res) => {
  *                   example: 查询失败
  */
 app.get("/getHouseDetail", verifyToken, (req, res) => {
-  const itemId = req.query.itemId;
-  const userId = req.user.userId;
+  try {
+    const itemId = req.query.itemId;
+    const userId = req.user.userId;
 
-  if (!itemId) {
-    return res.status(400).json({ message: "缺少参数 itemId" });
-  }
+    if (!itemId) {
+      return res.status(400).json({ message: "缺少参数 itemId", api: "/getHouseDetail" });
+    }
 
-  // 查询房产和用户信息，同时查询评论
-  const sql = `
-  SELECT 
-    house.*, 
-    users.id AS userId, 
-    users.username, 
-    users.phone, 
-    users.avatar,
-    CASE 
-      WHEN collections.id IS NOT NULL THEN 1 
-      ELSE 0 
-    END AS isCollected,
-    (
-      SELECT JSON_ARRAYAGG(
-        JSON_OBJECT(
-          'commentId', c.commentId,
-          'userId', c.userId,
-          'commentText', c.commentText,
-          'createdAt', c.createdAt,
-          'imageUrls', c.imageUrls,
-          'parentCommentId', c.parentCommentId,
-          'commenter', 
-          JSON_OBJECT(            -- 获取评论人的信息
-            'username', u.username,
-            'avatar', u.avatar,
-            'phone', u.phone
+    // 查询房产和用户信息，同时查询评论
+    const sql = `
+    SELECT 
+      house.*, 
+      users.id AS userId, 
+      users.username, 
+      users.phone, 
+      users.avatar,
+      CASE 
+        WHEN collections.id IS NOT NULL THEN 1 
+        ELSE 0 
+      END AS isCollected,
+      (
+        SELECT JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'commentId', c.commentId,
+            'userId', c.userId,
+            'commentText', c.commentText,
+            'createdAt', c.createdAt,
+            'imageUrls', c.imageUrls,
+            'parentCommentId', c.parentCommentId,
+            'commenter', 
+            JSON_OBJECT(
+              'username', u.username,
+              'avatar', u.avatar,
+              'phone', u.phone
+            )
           )
         )
-      )
-      FROM comments c
-      JOIN users u ON c.userId = u.id    -- 联接 users 表，获取评论人信息
-      WHERE c.houseId = house.id
-    ) AS comments
-  FROM 
-    house
-  INNER JOIN 
-    users 
-  ON 
-    house.userId = users.id
-  LEFT JOIN 
-    collections 
-  ON 
-    collections.item_id = house.id AND collections.user_id = ?
-  WHERE 
-    house.id = ? AND house.is_deleted = 0
-`;
+        FROM comments c
+        JOIN users u ON c.userId = u.id
+        WHERE c.houseId = house.id
+      ) AS comments
+    FROM 
+      house
+    INNER JOIN 
+      users 
+    ON 
+      house.userId = users.id
+    LEFT JOIN 
+      collections 
+    ON 
+      collections.item_id = house.id AND collections.user_id = ?
+    WHERE 
+      house.id = ? AND house.is_deleted = 0
+    `;
 
-  // 执行查询
-  sqlSelect(sql, [userId, itemId]).then((houseResult) => {
-    if (houseResult.length > 0) {
-      const houseData = houseResult[0];
-      if(houseData && houseData.comments){
-        houseData.commentTree = buildCommentTree(houseData.comments);
-      }else{
-        houseData.commentTree = [];
-      }
-      delete houseData.comments;
-
-      // 查询用户信息
-      const userSql = `SELECT username, avatar FROM users WHERE id = ?`;
-      sqlSelect(userSql, [houseData.userId]).then((userResult) => {
-        if (userResult.length > 0) {
-          const userData = userResult[0];
-
-          // 将查询到的用户信息添加到房产数据中
-          houseData.username = userData.username;
-          houseData.avatar = userData.avatar;
-
-          res.status(200).json({ message: "查询成功", data: houseData });
-        } else {
-          res.status(404).json({ message: "用户信息不存在" });
+    // 执行查询
+    sqlSelect(sql, [userId, itemId]).then((houseResult) => {
+      if (houseResult.length > 0) {
+        const houseData = houseResult[0];
+        if(houseData && houseData.comments){
+          houseData.commentTree = buildCommentTree(houseData.comments);
+        }else{
+          houseData.commentTree = [];
         }
-      }).catch((err) => {
-        console.error("查询用户信息失败:", err);
-        res.status(500).json({ message: "服务器错误" });
-      });
+        delete houseData.comments;
 
-    } else {
-      res.status(404).json({ message: "房产信息不存在" });
-    }
-  }).catch((err) => {
-    console.error("查询房产信息失败:", err);
-    res.status(500).json({ message: err.message });
-  });
+        // 查询用户信息
+        const userSql = `SELECT username, avatar FROM users WHERE id = ?`;
+        sqlSelect(userSql, [houseData.userId]).then((userResult) => {
+          if (userResult.length > 0) {
+            const userData = userResult[0];
+
+            // 将查询到的用户信息添加到房产数据中
+            houseData.username = userData.username;
+            houseData.avatar = userData.avatar;
+
+            res.status(200).json({ message: "查询成功", data: houseData });
+          } else {
+            res.status(404).json({ message: "用户信息不存在", api: "/getHouseDetail" });
+          }
+        }).catch((err) => {
+          console.error("查询用户信息失败:", err);
+          res.status(500).json({ message: "服务器错误", error: err.message, api: "/getHouseDetail" });
+        });
+
+      } else {
+        res.status(404).json({ message: "房产信息不存在", api: "/getHouseDetail" });
+      }
+    }).catch((err) => {
+      console.error("查询房产信息失败:", err);
+      res.status(500).json({ message: "查询失败", error: err.message, api: "/getHouseDetail" });
+    });
+  } catch (error) {
+    console.error("获取房屋详情处理异常:", error);
+    res.status(500).json({ message: "处理请求异常", error: error.message, api: "/getHouseDetail" });
+  }
 });
 /**
  * @swagger
@@ -581,84 +601,121 @@ app.get("/getHouseDetail", verifyToken, (req, res) => {
  *                   example: '数据库查询失败'
  */
 app.post('/search', async (req, res) => {
-  const { alias, area, houseType, floor, face, decorationStatus, type,lift ,propertyMoney,propertyName} = req.body;
-
-  // 初始化查询条件
-  let conditions = [];
-  let values = [];
-
-  if (alias) {
-    conditions.push("alias LIKE ?");
-    values.push(`%${alias}%`);
-  }
-  if (area) {
-    conditions.push("area LIKE ?");
-    values.push(`%${area}%`);
-  }
-  if (houseType) {
-    conditions.push("houseType LIKE ?");
-    values.push(`%${houseType}%`);
-  }
-  if (floor) {
-    conditions.push("floor LIKE ?");
-    values.push(`%${floor}%`);
-  }
-  if (face) {
-    conditions.push("face LIKE ?");
-    values.push(`%${face}%`);
-  }
-  if (decorationStatus) {
-    conditions.push("decorationStatus LIKE ?");
-    values.push(`%${decorationStatus}%`);
-  }
-  if (type) {
-    conditions.push("type LIKE ?");
-    values.push(`%${type}%`);
-  }
-  if (lift) {
-    conditions.push("lift LIKE ?");
-    values.push(`%${lift}%`);
-  }
-  if (propertyMoney) {
-    conditions.push("propertyMoney LIKE ?");
-    values.push(`%${propertyMoney}%`);
-  }
-  if (propertyName) {
-    conditions.push("propertyName LIKE ?");
-    values.push(`%${propertyName}%`);
-  }
-
-  // 如果没有任何条件，返回错误
-  if (conditions.length === 0) {
-    return res.status(400).json({ message: '至少传一个条件' });
-  }
-
-  // 构建 SQL 查询
-  const sql = `SELECT * FROM house WHERE ${conditions.join(' OR ')} AND is_deleted = 0`;
-  
   try {
-    // 执行查询
-    const results = await sqlSelect(sql, values);
-    res.status(200).json({ message: "查询成功", data: results });
+    const { alias, area, houseType, floor, face, decorationStatus, type, lift, propertyMoney, propertyName } = req.body;
+
+    // 初始化查询条件
+    let conditions = [];
+    let values = [];
+
+    if (alias) {
+      conditions.push("alias LIKE ?");
+      values.push(`%${alias}%`);
+    }
+    if (area) {
+      conditions.push("area LIKE ?");
+      values.push(`%${area}%`);
+    }
+    if (houseType) {
+      conditions.push("houseType LIKE ?");
+      values.push(`%${houseType}%`);
+    }
+    if (floor) {
+      conditions.push("floor LIKE ?");
+      values.push(`%${floor}%`);
+    }
+    if (face) {
+      conditions.push("face LIKE ?");
+      values.push(`%${face}%`);
+    }
+    if (decorationStatus) {
+      conditions.push("decorationStatus LIKE ?");
+      values.push(`%${decorationStatus}%`);
+    }
+    if (type) {
+      conditions.push("type LIKE ?");
+      values.push(`%${type}%`);
+    }
+    if (lift) {
+      conditions.push("lift LIKE ?");
+      values.push(`%${lift}%`);
+    }
+    if (propertyMoney) {
+      conditions.push("propertyMoney LIKE ?");
+      values.push(`%${propertyMoney}%`);
+    }
+    if (propertyName) {
+      conditions.push("propertyName LIKE ?");
+      values.push(`%${propertyName}%`);
+    }
+
+    // 如果没有任何条件，返回错误
+    if (conditions.length === 0) {
+      return res.status(400).json({ message: '至少传一个条件', api: "/search" });
+    }
+
+    // 构建 SQL 查询
+    const sql = `SELECT * FROM house WHERE ${conditions.join(' OR ')} AND is_deleted = 0`;
+    
+    try {
+      // 执行查询
+      const results = await sqlSelect(sql, values);
+      res.status(200).json({ message: "查询成功", data: results });
+    } catch (error) {
+      console.error("搜索查询失败:", error);
+      res.status(500).json({ message: '查询失败', error: error.message, api: "/search" });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Database query failed', error });
+    console.error("搜索处理异常:", error);
+    res.status(500).json({ message: '处理请求异常', error: error.message, api: "/search" });
   }
 });
-app.post('/deleteHoust',verifyToken, async (req, res) => {
+app.post('/deleteHouse', verifyToken, async (req, res) => {
   try {
-  const userId = req.user.userId;
-  const { id } = req.body;
-    const sql = `UPDATE house SET is_deleted = 1 WHERE id = ? AND userId = ?`
+    const userId = req.user.userId;
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ message: "缺少参数 id", api: "/deleteHouse" });
+    }
+    
+    const sql = `UPDATE house SET is_deleted = 1 WHERE id = ? AND userId = ?`;
     const result = await sqlSelect(sql, [id, userId]);
+    
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: '删除失败，找不到该房屋' });
-    }else{
+      return res.status(404).json({ message: '删除失败，找不到该房屋或无权限', api: "/deleteHouse" });
+    } else {
       return res.status(200).json({ message: '删除成功' });
     }
   } catch (error) {
-    res.status(500).json({ message: '删除失败', error:error.message });
+    console.error("删除房屋失败:", error);
+    res.status(500).json({ message: '删除失败', error: error.message, api: "/deleteHouse" });
   }
-})
+});
+
+// 确保保留原有的deleteHoust接口以向后兼容
+app.post('/deleteHoust', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ message: "缺少参数 id", api: "/deleteHoust" });
+    }
+    
+    const sql = `UPDATE house SET is_deleted = 1 WHERE id = ? AND userId = ?`;
+    const result = await sqlSelect(sql, [id, userId]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: '删除失败，找不到该房屋或无权限', api: "/deleteHoust" });
+    } else {
+      return res.status(200).json({ message: '删除成功' });
+    }
+  } catch (error) {
+    console.error("删除房屋失败:", error);
+    res.status(500).json({ message: '删除失败', error: error.message, api: "/deleteHoust" });
+  }
+});
 app.post('/updateHouse', verifyToken, async (req, res) => {
   try {
     console.log(req.body)
@@ -700,8 +757,12 @@ app.post('/updateHouse', verifyToken, async (req, res) => {
       image_urls,
     } = req.body;
     
+    if (!id) {
+      return res.status(400).json({ message: "缺少参数 id", api: "/updateHouse" });
+    }
+    
     const userId = req.user.userId;
-    const jsonUrls = JSON.stringify(image_urls); // 将图片数组转为字符串
+    const jsonUrls = JSON.stringify(image_urls || []); // 将图片数组转为字符串，防止为空
 
     // 构建 SQL 更新语句
     const sql = `
@@ -783,14 +844,15 @@ app.post('/updateHouse', verifyToken, async (req, res) => {
     // 执行 SQL 更新操作
     const result = await sqlSelect(sql, values);
 
-    // 如果没有更新任何记录，返回 404
+    // 如果没有更新任何记录，返回错误信息
     if (result.affectedRows === 0) {
-      return res.status(500).json({ message: '更新失败，找不到该房屋或无权限' });
+      return res.status(404).json({ message: '更新失败，找不到该房屋或无权限', api: "/updateHouse" });
     } else {
       return res.status(200).json({ message: '更新成功' });
     }
   } catch (error) {
-    res.status(500).json({ message: '更新失败', error: error.message });
+    console.error("更新房屋失败:", error);
+    res.status(500).json({ message: '更新失败', error: error.message, api: "/updateHouse" });
   }
 });
 

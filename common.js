@@ -66,6 +66,9 @@ function buildQuery(filters) {
     // 模糊匹配
     conditions.push(`house.companyName LIKE '%${filters.companyName}%'`);
   }
+  if (filters.urgent === true) {
+    conditions.push(`house.urgent = 1`);
+  }
   if (conditions.length > 0) {
     baseQuery += " WHERE " + conditions.join(" AND ");
   }

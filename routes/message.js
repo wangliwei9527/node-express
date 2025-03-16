@@ -70,9 +70,10 @@ let messages = readMessagesFromFile();
  */
 
 app.post("/sendMessage", verifyToken, (req, res) => {
-  const { recipientId, content, senderUsername, senderAvatar, timestamp } =
-    req.body;
-  const { userId: senderId } = req.user;
+  try {
+    const { recipientId, content, senderUsername, senderAvatar, timestamp } =
+      req.body;
+    const { userId: senderId } = req.user;
 
   if (!recipientId || !content || !senderUsername || !senderAvatar) {
     return res
@@ -97,6 +98,10 @@ app.post("/sendMessage", verifyToken, (req, res) => {
   messages.push(message);
   saveMessagesToFile();
   res.json({ success: true, message: "消息发送成功", data: message });
+  } catch (error) {
+    console.error("消息发送失败:", error);
+    res.status(500).json({ message: "消息发送失败", error: error.message, api: "/sendMessage" });
+  }
 });
 
 /**
@@ -151,10 +156,11 @@ app.post("/sendMessage", verifyToken, (req, res) => {
  */
 
 app.get("/getMessages", verifyToken, (req, res) => {
-  const lastTimestamp = parseInt(req.query.lastTimestamp, 10) || 0;
-  const recipientId = req.query.recipientId;
-  const userId = req.user.userId;
-  console.log("userId", userId);
+  try {
+    const lastTimestamp = parseInt(req.query.lastTimestamp, 10) || 0;
+    const recipientId = req.query.recipientId;
+    const userId = req.user.userId;
+    console.log("userId", userId);
 
   // 筛选出时间大于lastTimestamp的消息，且发送人或接收人是当前用户
   const newMessages = messages.filter((msg) => {
@@ -172,8 +178,12 @@ app.get("/getMessages", verifyToken, (req, res) => {
     }
   });
 
-  res.json({
-    success: true,
-    messages: newMessages,
-  });
+    res.json({
+      success: true,
+      messages: newMessages,
+    });
+  } catch (error) {
+    console.error("获取消息失败:", error);
+    res.status(500).json({ message: "获取消息失败", error: error.message, api: "/getMessages" });
+  }
 });

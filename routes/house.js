@@ -130,7 +130,7 @@ const { verifyToken, buildQuery,buildCommentTree } = require("../common");
  *               urgent:
  *                 type: boolean
  *                 description: 紧急
- *               describe:
+ *               home_describe:
  *                 type: string
  *                 description: 描述
  *     responses:
@@ -176,12 +176,12 @@ app.post("/addHouse", verifyToken, (req, res) => {
       image_urls,
       city,
       urgent,
-      describe
+      home_describe
     } = req.body;
     const jsonUrls = JSON.stringify(image_urls || []);
     // SQL 插入语句
     const sql = `INSERT INTO house 
-    (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city,urgent,describe) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    (propertyName, alias, totalPrice, type, heatingMethod, electricityMethod, gasMethod, buildingAddress, salesOfficeAddress, area, price, picture, state, pageView, houseType, squareMeter, district, phone, developmentArea, openingDate, deliveryDate, decorationStatus, propertyRightsDuration, plannedHouseholds, parkingRatio, ownerName, ownerContact, companyName, userId, floor, face, propertyMoney, lift,image_urls,city,urgent,home_describe) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     // 插入的数据
     const values = [
       propertyName || "", 
@@ -220,7 +220,7 @@ app.post("/addHouse", verifyToken, (req, res) => {
       jsonUrls || "[]", 
       city || "", 
       urgent || false,
-      describe || ""
+      home_describe || ""
     ];
     
     console.log("sql, values", sql, values);
